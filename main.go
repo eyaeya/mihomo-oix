@@ -86,7 +86,6 @@ func init() {
 	flag.BoolVar(&geodataMode, "m", false, "set geodata mode")
 	flag.BoolVar(&version, "v", false, "show current version of mihomo")
 	flag.BoolVar(&testConfig, "t", false, "test configuration and exit")
-	flag.Parse()
 }
 
 func main() {
@@ -125,6 +124,10 @@ func main() {
 		return
 	}
 
+	flag.Parse()
+
+	applyOIXOverrides()
+
 	if version {
 		fmt.Printf("Mihomo Meta %s %s %s with %s %s\n",
 			C.Version, runtime.GOOS, runtime.GOARCH, runtime.Version(), C.BuildTime)
@@ -153,10 +156,6 @@ func main() {
 			log.Errorln("Parse age-secret-key error: %s", err.Error())
 		}
 		age.SetGlobalSecretKeys(ageSecretKey)
-	}
-
-	if oixProviderName != "" {
-		oix.SetProviderName(oixProviderName)
 	}
 
 	if configString != "" {
@@ -272,5 +271,15 @@ func main() {
 				log.Errorln("Parse config error: %s", err.Error())
 			}
 		}
+	}
+}
+
+func applyOIXOverrides() {
+	if oixToken != "" {
+		os.Setenv("OIX_TOKEN", oixToken)
+	}
+	if oixProviderName != "" {
+		os.Setenv("OIX_PROVIDER_NAME", oixProviderName)
+		oix.SetProviderName(oixProviderName)
 	}
 }
